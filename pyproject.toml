@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssDB"
+description = "Python package to use Google Sheets like RDB"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.1.0"
+dependencies = ["gspread~=5.12.1"]
+
+[tool.setuptools.packages.find]
+exclude = ["build", "tests"]
