@@ -118,10 +118,11 @@ class Table:
         )
 
     def yaml_dump(self, path: str, include_timestamps=True):
+        records = list(self.records)
         if not include_timestamps:
-            for record in self.records:
+            for record in records:
                 del record['created_at'], record['updated_at']
-        data = {self.name: list(self.records)}
+        data = {self.name: records}
         Yaml.dump(path, data)
 
     @staticmethod
