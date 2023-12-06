@@ -117,7 +117,10 @@ class Table:
             table_range='A1',
         )
 
-    def yaml_dump(self, path: str):
+    def yaml_dump(self, path: str, include_timestamps=True):
+        if not include_timestamps:
+            for record in self.records:
+                del record['created_at'], record['updated_at']
         data = {self.name: list(self.records)}
         Yaml.dump(path, data)
 
