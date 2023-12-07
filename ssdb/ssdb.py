@@ -1,18 +1,17 @@
 import gspread
-from dateutil import parser
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, TypeAlias, Iterator
 from typing_extensions import Self
 from dataclasses import dataclass, InitVar, field, asdict
 from gspread import Worksheet, Spreadsheet
 from gspread.utils import ValueRenderOption, ValueInputOption
 
-from .utils import Yaml
+from .utils import Yaml, SerialNumber
 
 
 Cell: TypeAlias = Any | str | int | float
 Record: TypeAlias = list[dict[Any, Cell]]
-dtfmt = '%Y-%m-%d %H:%M:%S'
+now = lambda: SerialNumber.from_datetime(datetime.now(timezone.utc))
 
 
 class Connector:
@@ -25,20 +24,16 @@ class Connector:
 @dataclass(slots=True, kw_only=True)
 class Scheme:
     # DB Column
-    created_at: str = field(default_factory=lambda: datetime.now().strftime(dtfmt))
-    updated_at: str = field(default_factory=lambda: datetime.now().strftime(dtfmt))
+    created_at: float = field(default_factory=now)
+    updated_at: float = field(default_factory=now)
     _primary_key = 'primary_key' # attribute name to use as primary_key
 
-    def set_updated_at(self):
-        self.updated_at = datetime.now().strftime(dtfmt)
+    def __post_init__(self):
+        self.preprocess()
 
-    @property
-    def created_time(self) -> datetime:
-        return parser.parse(self.created_at)
-
-    @property
-    def updated_time(self) -> datetime:
-        return parser.parse(self.updated_at)
+    def preprocess(self):
+        # Processes you want to do with __post_init__
+        pass
 
     @property
     def primary_key_value(self) -> Any:
@@ -57,6 +52,7 @@ class Scheme:
             if k in cls.__slots__:
                 args.update({k: v})
         return cls(**args)
+
 
 @dataclass(slots=True)
 class Table:
@@ -117,11 +113,14 @@ class Table:
             table_range='A1',
         )
 
-    def yaml_dump(self, path: str, include_timestamps=True):
-        records = list(self.records)
-        if not include_timestamps:
-            for record in records:
-                del record['created_at'], record['updated_at']
+    def yaml_dump(self, path: str, columns=[]):
+        if not columns:
+            records = list(self.records)
+        if columns:
+            records = []
+            for record in list(self.records):
+                r = {k: v for k, v in record.items() if k in columns}
+                records.append(r)
         data = {self.name: records}
         Yaml.dump(path, data)
 
