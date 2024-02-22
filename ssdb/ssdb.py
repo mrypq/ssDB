@@ -104,6 +104,13 @@ class Table:
         rows.insert(0, header)
         self.ws.update('A1', rows)
 
+    def update(self, data: Scheme):
+        for i, r in enumerate(self.schemes):
+            if r.primary_key_value == data.primary_key_value:
+                    row = [data.aslist(header = self.header)]
+                    self.ws.update(f'A{i+2}', row)
+                    break
+
     def appends(self, data: list[Scheme]):
         header = self.header
         rows = [d.aslist(header) for d in data]
