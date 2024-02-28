@@ -27,7 +27,7 @@ class SerialNumber:
         return datetime(1899, 12, 30, 0, 0, tzinfo=tz)
 
     @classmethod
-    def to_datetime(cls, num: float) -> int:
+    def to_datetime(cls, num: float) -> datetime:
         days, fraction = modf(num)
         return cls.get_basedt() + timedelta(days=days, hours=24*fraction)
 
