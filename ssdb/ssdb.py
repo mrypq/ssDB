@@ -66,11 +66,14 @@ class Table:
 
     @property
     def records(self) -> Iterator[dict[str, Cell]]:
-        records = self.ws.get_all_records(
-            head=1,
-            value_render_option=ValueRenderOption.unformatted,
-        )
-        yield from records
+        try:
+            records = self.ws.get_all_records(
+                head=1,
+                value_render_option=ValueRenderOption.unformatted,
+            )
+            yield from records
+        except:
+            return []
 
     @property
     def schemes(self) -> Iterator[Scheme]:
