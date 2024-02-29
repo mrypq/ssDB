@@ -103,6 +103,10 @@ class Table:
             value_render_option=ValueRenderOption.unformatted,
         )
 
+    def initialize(self):
+        rows = [self.header]
+        self.ws.clear()
+        self.ws.update('A1', rows)
 
     def get(self, primary_key: Cell) -> Scheme|None:
         for r in self.schemes:
