@@ -162,12 +162,21 @@ class Table:
                         return False
         return True
 
-class Tables(Enum):
-    # regist your tables
-    # USERS = ('users', User, AccountSheet.book)
 
-    def __init__(self, sheet: str, scheme: Scheme, book: Spreadsheet):
-        self.table = Table(sheet, scheme, book)
+class Sheets(Enum):
+    # regist your spreadsheet ids
+    # SHEETNAME = 'your_book_id'
+
+    def __init__(self, book_id: str):
+        self.book = Connector.connect(book_id)
+
+
+class Tables(Enum):
+    # regist your Sheets
+    # TABLENAME = ('yout_sheet_name', Scheme, Sheets.SHEETNAME)
+
+    def __init__(self, title: str, scheme: Scheme, book: Sheets):
+        self.table = Table(title, scheme, book.book)
         self.scheme = scheme
 
     def gets(self, **kwargs) -> Iterator[Scheme]:
