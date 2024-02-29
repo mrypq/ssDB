@@ -26,6 +26,7 @@ class Scheme:
     # DB Column
     created_at: float = field(default_factory=now)
     updated_at: float = field(default_factory=now)
+    numericise_ignores = []
     _primary_key = 'primary_key' # attribute name to use as primary_key
 
     def __post_init__(self):
@@ -70,6 +71,7 @@ class Table:
             records = self.ws.get_all_records(
                 head=1,
                 value_render_option=ValueRenderOption.unformatted,
+                numericise_ignore=self.scheme.numericise_ignores,
             )
             yield from records
         except:
