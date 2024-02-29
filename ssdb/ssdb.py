@@ -54,6 +54,19 @@ class Scheme:
                 args.update({k: v})
         return cls(**args)
 
+    @staticmethod
+    def to_serial_number(dt: int|float|datetime) -> float:
+        match dt:
+            case int():
+                return SerialNumber.from_timestamp(dt)
+            case float() if dt > 946684800:
+                return SerialNumber.from_timestamp(dt)
+            case float():
+                return dt
+            case datetime():
+                return SerialNumber.from_datetime(dt)
+        return -1
+
 
 @dataclass(slots=True)
 class Table:
