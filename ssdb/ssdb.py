@@ -1,4 +1,5 @@
 import gspread
+from enum import Enum
 from datetime import datetime, timezone
 from typing import Any, TypeAlias, Iterator
 from typing_extensions import Self
@@ -160,3 +161,31 @@ class Table:
                     if getattr(record, k) != v:
                         return False
         return True
+
+class Tables(Enum):
+    # regist your tables
+    # USERS = ('users', User, AccountSheet.book)
+
+    def __init__(self, sheet: str, scheme: Scheme, book: Spreadsheet):
+        self.table = Table(sheet, scheme, book)
+        self.scheme = scheme
+
+    def gets(self, **kwargs) -> Iterator[Scheme]:
+        return self.table.gets(**kwargs)
+
+    def get(self, key: str) -> Scheme|None:
+        if not self.scheme._primary_key:
+            raise ValueError
+        return self.table.get(key)
+
+    def appends(self, data: list[Scheme]):
+        self.table.appends(data)
+
+    def updates(self, data: list[Scheme]):
+        self.table.overwrite(data)
+
+    def update(self, data: Scheme):
+        self.table.update(data)
+
+    def yaml_dump(self, path: str, columns=[]):
+        self.table.yaml_dump(path, columns)
