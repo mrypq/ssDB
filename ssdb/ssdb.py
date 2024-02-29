@@ -3,8 +3,8 @@ from enum import Enum
 from datetime import datetime, timezone
 from typing import Any, TypeAlias, Iterator
 from typing_extensions import Self
-from dataclasses import dataclass, InitVar, field, asdict
-from gspread import Worksheet, Spreadsheet
+from dataclasses import dataclass, field, asdict
+from gspread import Spreadsheet
 from gspread.utils import ValueRenderOption, ValueInputOption
 
 from .utils import Yaml, SerialNumber
@@ -13,13 +13,6 @@ from .utils import Yaml, SerialNumber
 Cell: TypeAlias = Any | str | int | float
 Record: TypeAlias = list[dict[Any, Cell]]
 now = lambda: SerialNumber.from_datetime(datetime.now(timezone.utc))
-
-
-class Connector:
-    @staticmethod
-    def connect(book_id: str) -> Spreadsheet:
-        gc = gspread.oauth()
-        return gc.open_by_key(book_id)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -69,15 +62,26 @@ class Scheme:
         return -1
 
 
-@dataclass(slots=True)
-class Table:
-    name: str
-    scheme: type[Scheme]
-    book: InitVar[Spreadsheet]
-    ws: Worksheet = field(init=False)
+class Sheets(Enum):
+    # regist your spreadsheet ids
+    # SHEETNAME = 'your_book_id'
 
-    def __post_init__(self, book: Spreadsheet):
-        self.ws = book.worksheet(self.name)
+    def __init__(self, book_id: str):
+        self.book = self.connect(book_id)
+
+    @staticmethod
+    def connect(book_id: str) -> Spreadsheet:
+        gc = gspread.oauth()
+        return gc.open_by_key(book_id)
+
+
+class Tables(Enum):
+    # regist your Sheets
+    # TABLENAME = ('yout_sheet_name', Scheme, Sheets.SHEETNAME)
+
+    def __init__(self, title: str, scheme: type[Scheme], sheet: Sheets):
+        self.ws = sheet.book.worksheet(title)
+        self.scheme = scheme
 
     @property
     def records(self) -> Iterator[dict[str, Cell]]:
@@ -116,7 +120,7 @@ class Table:
 
     def gets(self, **query) -> Iterator[Scheme]:
         for r in self.schemes:
-            if not self.check_query(r, **query):
+            if not self.__check_query(r, **query):
                 continue
             yield r
 
@@ -155,7 +159,7 @@ class Table:
         Yaml.dump(path, data)
 
     @staticmethod
-    def check_query(record: Scheme, **query) -> bool:
+    def __check_query(record: Scheme, **query) -> bool:
         for k, v in query.items():
             match v:
                 case tuple()|list()|set():
@@ -165,40 +169,3 @@ class Table:
                     if getattr(record, k) != v:
                         return False
         return True
-
-
-class Sheets(Enum):
-    # regist your spreadsheet ids
-    # SHEETNAME = 'your_book_id'
-
-    def __init__(self, book_id: str):
-        self.book = Connector.connect(book_id)
-
-
-class Tables(Enum):
-    # regist your Sheets
-    # TABLENAME = ('yout_sheet_name', Scheme, Sheets.SHEETNAME)
-
-    def __init__(self, title: str, scheme: Scheme, book: Sheets):
-        self.table = Table(title, scheme, book.book)
-        self.scheme = scheme
-
-    def gets(self, **kwargs) -> Iterator[Scheme]:
-        return self.table.gets(**kwargs)
-
-    def get(self, key: str) -> Scheme|None:
-        if not self.scheme._primary_key:
-            raise ValueError
-        return self.table.get(key)
-
-    def appends(self, data: list[Scheme]):
-        self.table.appends(data)
-
-    def updates(self, data: list[Scheme]):
-        self.table.overwrite(data)
-
-    def update(self, data: Scheme):
-        self.table.update(data)
-
-    def yaml_dump(self, path: str, columns=[]):
-        self.table.yaml_dump(path, columns)
