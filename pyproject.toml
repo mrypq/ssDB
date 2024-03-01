@@ -12,7 +12,7 @@ dependencies = [
     "gspread",
     "PyYAML",
     "typing_extensions",
-    "dateutil",
+    "python-dateutil",
 ]
 
 [tool.setuptools.packages.find]
