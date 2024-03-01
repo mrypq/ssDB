@@ -11,7 +11,8 @@ version = "0.2.0"
 dependencies = [
     "gspread",
     "PyYAML",
-    "typing_extensions"
+    "typing_extensions",
+    "dateutil",
 ]
 
 [tool.setuptools.packages.find]

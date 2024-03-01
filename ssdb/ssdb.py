@@ -1,6 +1,7 @@
 import gspread
 from enum import Enum
 from datetime import datetime, timezone
+from dateutil import parser
 from typing import Any, TypeAlias, Iterator
 from typing_extensions import Self
 from dataclasses import dataclass, field, asdict
@@ -49,12 +50,18 @@ class Scheme:
         return cls(**args)
 
     @staticmethod
-    def to_serial_number(dt: int|float|datetime) -> float:
+    def to_serial_number(dt: int|float|datetime|str) -> float:
         match dt:
+            case str():
+                try:
+                    dt = parser.parse(dt)
+                    return SerialNumber.from_datetime(dt)
+                except:
+                    return -1
+            case float()|int() if dt > 946684800:
+                return SerialNumber.from_timestamp(dt)
             case int():
-                return SerialNumber.from_timestamp(dt)
-            case float() if dt > 946684800:
-                return SerialNumber.from_timestamp(dt)
+                return float(dt)
             case float():
                 return dt
             case datetime():
