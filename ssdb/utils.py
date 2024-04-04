@@ -1,7 +1,7 @@
 import yaml
 from typing import Any
 from math import modf
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 
 
 class Yaml:
@@ -37,6 +37,15 @@ class SerialNumber:
         days = float(delta.days)
         fraction = float(delta.seconds / (60*60*24))
         return days+fraction
+
+    @classmethod
+    def from_date(cls, date: date) -> float:
+        dt = datetime.combine(date, date.min)
+        return cls.from_datetime(dt)
+
+    @classmethod
+    def today(cls, tz=timezone.utc) -> float:
+        return cls.from_datetime(datetime.now(tz))
 
     @classmethod
     def from_timestamp(cls, timestamp: int, tz=timezone.utc) -> float:
