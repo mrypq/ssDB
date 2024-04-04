@@ -45,7 +45,7 @@ class SerialNumber:
 
     @classmethod
     def today(cls, tz=timezone.utc) -> float:
-        return cls.from_datetime(datetime.now(tz))
+        return cls.from_datetime(datetime.now(tz).date())
 
     @classmethod
     def from_timestamp(cls, timestamp: int, tz=timezone.utc) -> float:
