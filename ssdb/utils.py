@@ -39,8 +39,8 @@ class SerialNumber:
         return days+fraction
 
     @classmethod
-    def from_date(cls, date: date) -> float:
-        dt = datetime.combine(date, date.min)
+    def from_date(cls, d: date) -> float:
+        dt = datetime.combine(d, date.min)
         return cls.from_datetime(dt)
 
     @classmethod
